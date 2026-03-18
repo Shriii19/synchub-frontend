@@ -3,7 +3,8 @@ import { io } from "socket.io-client";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const socket = io("http://localhost:5000");
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const socket = io(API_BASE_URL);
 
 const CONTACTS = [
   { id: "alice@synchub.io", name: "Alice Johnson", status: "online", unread: 2, lastMsg: "Hey, how's it going?" },
@@ -86,8 +87,11 @@ function Chat() {
   useEffect(() => {
     setMessages([]);
     const roomId = getRoomId(activeChat);
+    const token = localStorage.getItem("token");
 
-    axios.get(`http://localhost:5000/api/messages/${roomId}`)
+    axios.get(`${API_BASE_URL}/api/messages/${roomId}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
       .then(({ data }) => setMessages(data))
       .catch(() => {});
 
@@ -102,7 +106,11 @@ function Chat() {
 
   const sendMessage = () => {
     if (!message.trim()) return;
-    socket.emit("sendMessage", { roomId: getRoomId(activeChat), content: message });
+    socket.emit("sendMessage", {
+      senderId: currentUser,
+      roomId: getRoomId(activeChat),
+      content: message,
+    });
     setMessage("");
     if (textareaRef.current) textareaRef.current.style.height = "auto";
   };
@@ -411,9 +419,10 @@ function Chat() {
           ) : (
             <div className="space-y-0.5">
               {messages.map((msg, index) => {
-                const isMe = msg.user?.email === currentUser;
+                const sender = msg.sender || "Anonymous";
+                const isMe = sender === currentUser;
                 const prev = messages[index - 1];
-                const isSameUser = prev?.user?.email === msg.user?.email;
+                const isSameUser = (prev?.sender || "Anonymous") === sender;
                 const timeDiff = prev ? (new Date(msg.createdAt) - new Date(prev.createdAt)) / 60000 : 999;
                 const showHeader = !isSameUser || timeDiff > 5;
                 const dateDivider = getDateDivider(index);
@@ -432,8 +441,8 @@ function Chat() {
                     <div className={`flex gap-3 group animate-msg-in ${showHeader ? "mt-5" : "mt-0.5"} ${isMe ? "flex-row-reverse" : "flex-row"}`}>
                       {/* Avatar */}
                       <div className={`shrink-0 w-9 mt-0.5 ${showHeader ? "" : "invisible"}`}>
-                        <div className={`w-9 h-9 rounded-full bg-linear-to-br ${getGradient(msg.user?.email)} flex items-center justify-center text-xs font-bold shadow`}>
-                          {getInitials(msg.user?.email)}
+                        <div className={`w-9 h-9 rounded-full bg-linear-to-br ${getGradient(sender)} flex items-center justify-center text-xs font-bold shadow`}>
+                          {getInitials(sender)}
                         </div>
                       </div>
 
@@ -442,7 +451,7 @@ function Chat() {
                         {showHeader && (
                           <div className={`flex items-baseline gap-2 mb-1.5 px-1 ${isMe ? "flex-row-reverse" : ""}`}>
                             <span className="text-xs font-semibold text-gray-300">
-                              {isMe ? "You" : msg.user?.email?.split("@")[0] ?? "Anonymous"}
+                              {isMe ? "You" : sender?.split("@")[0] ?? "Anonymous"}
                             </span>
                             <span className="text-xs text-gray-600">{formatTime(msg.createdAt)}</span>
                           </div>
