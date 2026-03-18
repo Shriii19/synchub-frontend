@@ -2,6 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,9 +19,12 @@ function Login() {
     setError("");
     setLoading(true);
     try {
-      const { data } = await axios.post("http://localhost:5000/api/auth/login", { email, password });
+      const { data } = await axios.post(`${API_BASE_URL}/api/auth/login`, {
+        email: email.trim(),
+        password,
+      });
       localStorage.setItem("token", data.token);
-      localStorage.setItem("userEmail", email);
+      localStorage.setItem("userEmail", data.email || email.trim().toLowerCase());
       navigate("/chat");
     } catch (err) {
       setError(err.response?.data?.message || "Login failed. Please try again.");
@@ -33,9 +38,13 @@ function Login() {
     setError("");
     setLoading(true);
     try {
-      const { data } = await axios.post("http://localhost:5000/api/auth/register", { username, email, password });
+      const { data } = await axios.post(`${API_BASE_URL}/api/auth/register`, {
+        name: username.trim(),
+        email: email.trim(),
+        password,
+      });
       localStorage.setItem("token", data.token);
-      localStorage.setItem("userEmail", email);
+      localStorage.setItem("userEmail", data.email || email.trim().toLowerCase());
       navigate("/chat");
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed. Please try again.");
