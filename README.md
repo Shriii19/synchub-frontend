@@ -221,7 +221,7 @@ Code quality is maintained with ESLint and React-specific rules.
 - 🔐 **SSO Integration** - Single sign-on support
 - 📝 **Audit Logs** - Activity logging and monitoring
 - 🔗 **API Documentation** - Interactive API explorer
-- 🤖 **Chatbot Integration** - AI-powered chat assistance
+- 🤖 **Chatbot Integration** - Automated chat assistance
 
 ---
 
