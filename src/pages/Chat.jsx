@@ -42,7 +42,6 @@ function Chat() {
   const [activeChat, setActiveChat] = useState({ type: "group", id: "general", name: "General" });
   const [sidebarTab, setSidebarTab] = useState("groups");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
@@ -96,8 +95,12 @@ function Chat() {
       .catch(() => {});
 
     socket.emit("joinRoom", roomId);
-    socket.on("receiveMessage", (data) => setMessages((prev) => [...prev, data]));
-    return () => socket.off("receiveMessage");
+    const handler = (data) => setMessages((prev) => [...prev, data]);
+    socket.on("receiveMessage", handler);
+    return () => {
+      socket.off("receiveMessage", handler);
+      socket.emit("leaveRoom", roomId);
+    };
   }, [activeChat]);
 
   useEffect(() => {
@@ -457,7 +460,7 @@ function Chat() {
                           </div>
                         )}
                         <div
-                          className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed wrap-break-word whitespace-pre-wrap shadow-sm ${
+                          className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words whitespace-pre-wrap shadow-sm ${`
                             isMe
                               ? "bg-linear-to-br from-blue-600 to-blue-700 text-white rounded-tr-md"
                               : "bg-[#1a2030] text-gray-100 border border-white/5 rounded-tl-md"
@@ -478,17 +481,6 @@ function Chat() {
             </div>
           )}
 
-          {/* Typing indicator */}
-          {isTyping && (
-            <div className="flex items-center gap-2 mt-4 text-gray-500 text-xs">
-              <div className="flex gap-1">
-                {[0, 150, 300].map((d) => (
-                  <div key={d} className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: `${d}ms` }} />
-                ))}
-              </div>
-              <span>Someone is typing…</span>
-            </div>
-          )}
           <div ref={messagesEndRef} />
         </main>
 
