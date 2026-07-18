@@ -270,16 +270,6 @@ Project Link: [https://github.com/Shriii19/synchub-frontend](https://github.com/
 
 Backend Repository: [https://github.com/Shriii19/synchub-backend](https://github.com/Shriii19/synchub-backend)
 
----
-
-## 🙏 Acknowledgments
-
-- [React](https://reactjs.org/)
-- [Vite](https://vitejs.dev/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Socket.io](https://socket.io/)
-- [Axios](https://axios-http.com/)
-- [React Router](https://reactrouter.com/)
 
 ---
 
